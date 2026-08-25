@@ -270,32 +270,71 @@ null
 
 15. amenities
 
-This is extremely important.
+This is the most critical field.
 
-Return ONLY amenities explicitly mentioned in the supplied
-listing data.
+Return ONLY amenities explicitly mentioned word-for-word in the
+supplied listing description.
 
 DO NOT add generic amenities.
 
 DO NOT assume that a compound has security, swimming pools,
 parking, gyms, gardens, elevators, pets allowed, etc.
 
-For example, if the description says:
+RULES:
 
-"private garage"
+- If the description does NOT say "parking" or "garage", do NOT
+  return "Covered parking".
 
-you may return:
+- If the description does NOT say "pets" or "animals", do NOT
+  return "Pets Allowed".
 
-["Covered parking"]
+- If the description does NOT say "electricity meter" or "عداد
+  كهرباء", do NOT return "Electricity Meter".
 
-If the description does NOT mention parking, do NOT return
-"Covered parking".
+- If the description does NOT say "water meter" or "عداد مياه",
+  do NOT return "Water Meter".
 
-If the description does NOT mention pets, do NOT return
-"Pets Allowed".
+- If the description does NOT say "gas" or "غاز", do NOT return
+  "Natural Gas".
 
-If the description does NOT mention a swimming pool, do NOT
-return "Swimming Pool".
+- If the description does NOT say "telephone" or "هاتف", do NOT
+  return "Landline".
+
+- If the description does NOT say "balcony" or "بلكونة", do NOT
+  return "Balcony or Terrace".
+
+- If the description does NOT say "lobby" or "لوبي", do NOT
+  return "Lobby in Building".
+
+- If the description does NOT say "concierge" or "كونسيرج", do
+  NOT return "24 Hours Concierge".
+
+- If the description does NOT say "maid" or "خادمة", do NOT
+  return "Maids Room".
+
+- If the description does NOT say "pool" or "مسبح", do NOT
+  return "Swimming Pool".
+
+- If the description does NOT say "gym" or "جيم", do NOT
+  return "Gym or Health Club".
+
+- If the description does NOT say "security" or "أمن", do NOT
+  return "Security Staff".
+
+- If the description does NOT say "cctv" or "كاميرات", do NOT
+  return "CCTV Security".
+
+- If the description does NOT say "play" or " playing", do NOT
+  return "Kids Play Area".
+
+- If the description does NOT say "garden" or "حديقة", do NOT
+  return "Lawn or Garden".
+
+- If the description does NOT say "bbq" or "شواء", do NOT
+  return "Barbeque Area".
+
+BE STRICT. Only return amenities that are literally stated in the
+description. If in doubt, leave it out.
 
 16. floorNumber
 
@@ -396,16 +435,30 @@ ${sourceText}
 You are a high-precision real-estate data extraction
 system.
 
-Precision is more important than recall.
+CRITICAL RULES:
 
-Never hallucinate.
+1. Precision is more important than recall.
 
-If evidence is missing, use null.
+2. Never hallucinate information.
 
-Never create amenities that are not explicitly supported
-by the source listing.
+3. If evidence is missing, use null.
 
-Return JSON only.
+4. NEVER create amenities that are not explicitly
+   mentioned word-for-word in the source listing.
+
+5. NEVER assume amenities based on compound name,
+   property type, or location.
+
+6. NEVER add "common" amenities that you think the
+   property should have.
+
+7. ONLY extract amenities that are literally stated
+   in the description text.
+
+8. If you are unsure whether an amenity is mentioned,
+   do NOT include it.
+
+9. Return JSON only.
             `.trim(),
 
           userPrompt: prompt,
@@ -877,7 +930,73 @@ Return JSON only.
       groupB.cashDiscountPct = null;
     }
 
+    /*
+     * AMENITIES
+     *
+     * Remove amenities that are NOT explicitly mentioned
+     * in the source text. This prevents hallucination.
+     */
+
+    const validAmenities = this.validateAmenities(
+      groupB.amenities,
+      text,
+    );
+    groupB.amenities = validAmenities;
+
     return groupB;
+  }
+
+  private validateAmenities(
+    amenities: string[],
+    sourceText: string,
+  ): string[] {
+    const validatedAmenities: string[] = [];
+
+    for (const amenity of amenities) {
+      const amenityLower = amenity.toLowerCase();
+
+      // Check if amenity is explicitly mentioned in source
+      if (sourceText.includes(amenityLower)) {
+        validatedAmenities.push(amenity);
+        continue;
+      }
+
+      // Check for common variations/translations
+      const variations = this.getAmenityVariations(amenityLower);
+      const hasVariation = variations.some(v =>
+        sourceText.includes(v)
+      );
+
+      if (hasVariation) {
+        validatedAmenities.push(amenity);
+      }
+    }
+
+    return validatedAmenities;
+  }
+
+  private getAmenityVariations(amenity: string): string[] {
+    const variationMap: Record<string, string[]> = {
+      'covered parking': ['جراج', 'موقف سيارات', 'parking', 'garage'],
+      'pets allowed': ['حيوانات', 'pets', 'حيوانات أليفة'],
+      'electricity meter': ['عداد كهرباء', 'electricity meter', 'count meter'],
+      'water meter': ['عداد مياه', 'water meter'],
+      'natural gas': ['غاز طبيعي', 'natural gas', 'gas'],
+      'landline': ['هاتف أرضي', 'landline', 'telephone'],
+      'balcony or terrace': ['بلكونة', 'تراس', 'balcony', 'terrace'],
+      'lobby in building': ['لوبي', 'lobby', 'بهو'],
+      '24 hours concierge': ['كونسيرج', 'concierge', 'خدمات'],
+      'maids room': ['غرفة خادمة', 'maid', 'maids room', 'خادمة'],
+      'swimming pool': ['مسبح', 'pool', 'swimming'],
+      'gym or health club': ['جيم', 'صالة رياضية', 'gym', 'fitness'],
+      'security staff': ['أمن', 'حراسة', 'security', 'guard'],
+      'cctv security': ['كاميرات', 'cctv', 'مراقبة'],
+      'kids play area': [' played area', 'play area', 'kids area'],
+      'lawn or garden': ['حديقة', 'garden', 'lawn'],
+      'barbeque area': ['شواء', 'bbq', 'barbecue'],
+    };
+
+    return variationMap[amenity] || [];
   }
 
   private containsAny(
