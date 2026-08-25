@@ -125,8 +125,9 @@ Re-running the pipeline updates changed rows, adds new rows, and preserves file-
 ## Limitations
 
 - **Rate Limiting**: Bayut may block rapid requests. Use `REQUEST_DELAY_MS=2000+`
-- **Bot Detection**: Some pages return challenge pages instead of content
-- **Group B Population**: Only ~10% of listings have compound/developer data extracted
+- **Bot Detection**: Some pages return challenge pages instead of content but in other runs they will eventually be captured
+- **Group B Population**: not all of the listings extracted due to limits on llm api. 94 listings has been exctracted while the 
+rest remain empty.
 - **Language Variations**: Arabic descriptions may use different terminology
 
 ## Performance

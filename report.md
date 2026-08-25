@@ -84,7 +84,7 @@
 
 **Insight**: Cairo dominates the dataset with nearly half of all listings, followed by Alexandria (27%) and Giza (18%). This reflects the concentration of real estate activity in Greater Cairo and Alexandria.
 
-### Top 10 Cities
+### Top 10 Cities in the dataset
 | City | Count | Percentage |
 |---|---|---|
 | New Cairo | 138 | 27.6% |

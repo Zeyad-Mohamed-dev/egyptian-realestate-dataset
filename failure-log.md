@@ -14,4 +14,4 @@
 
 * **Evidence-constrained extraction:** Real-estate listings frequently omit information that might normally be expected from the property type or compound. The Group B extraction therefore treats missing information as `null` and applies deterministic evidence checks to reduce unsupported payment-plan and discount values.
 
-Overall, the main scraping challenge was the inconsistency of information available across listings rather than a single blocking mechanism. The pipeline was designed to preserve these differences rather than fill missing values with assumptions.
+Overall, the main challenges were the inconsistency of data extraction and the nondeterministic nature of LLMs, especially when using cheaper or smaller models and increasing the prompt size will lead to more token consumption therfore more cost and increasing it will lead to more fault than the dataset can tolerate.

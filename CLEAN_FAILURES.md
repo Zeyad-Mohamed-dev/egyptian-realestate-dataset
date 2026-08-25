@@ -35,6 +35,28 @@
 **Examples**: "Park Valley" vs "Park Valley Compound" vs "Park Valley Sheikh Zayed"
 **Workaround**: Compound name normalization strips common suffixes ("Compound", "كمبوند") but cannot resolve all variations.
 
+### 6. Large token consumption from Arabic listing descriptions made local LLM-based JSON structuring impractical
+
+**Impact**
+
+The Group B extraction stage became the main bottleneck when processing listings containing long Arabic descriptions. Large descriptions significantly increased the number of input tokens sent to the local LLM while the model was also required to return a relatively large structured JSON object containing 19 fields.
+
+This resulted in:
+
+- High token consumption per listing.
+- Slow inference for long Arabic descriptions.
+- Increased difficulty running the extraction pipeline reliably with a local model.
+- Inconsistent extraction quality for fields such as `compoundName`, `developerName`, payment information, and amenities.
+- Poor scalability when processing a larger number of listings.
+
+**Cause**
+
+The Group B extractor receives the serialized listing data as a single source string:
+
+```ts
+const sourceText = this.buildSourceText(input.data);
+
+
 ## Recommendations for Future Improvements
 1. Implement proxy rotation to reduce bot detection
 2. Add retry logic for failed pages with exponential backoff
