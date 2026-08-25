@@ -16,6 +16,7 @@
     "evaluate": "echo \"Evaluation command not implemented yet\"",
     "list-extractions": "ts-node -r tsconfig-paths/register src/cli/list-extractions.ts",
     "extract:group-a": "ts-node -r tsconfig-paths/register src/cli/extract-group-a.ts",
+    "extract:group-b": "ts-node -r tsconfig-paths/register src/cli/extract-group-b.ts",
     "export": "ts-node -r tsconfig-paths/register src/cli/export.ts"
   },
   "dependencies": {
