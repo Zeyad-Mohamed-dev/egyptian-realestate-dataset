@@ -1,0 +1,52 @@
+{
+  "name": "egypt-housing-dataset",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NestJS and Playwright blueprint for an Egyptian housing dataset pipeline",
+  "scripts": {
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint \"{src,test}/**/*.ts\"",
+    "test": "vitest run",
+    "collect": "ts-node -r tsconfig-paths/register src/cli/collect.ts",
+    "parse": "ts-node -r tsconfig-paths/register src/cli/parse.ts",
+    "extract": "ts-node -r tsconfig-paths/register src/cli/extract.ts",
+    "evaluate": "echo \"Evaluation command not implemented yet\"",
+    "list-extractions": "ts-node -r tsconfig-paths/register src/cli/list-extractions.ts",
+    "extract:group-a": "ts-node -r tsconfig-paths/register src/cli/extract-group-a.ts",
+    "export": "echo \"Export command not implemented yet\""
+  },
+  "dependencies": {
+    "@google/genai": "^2.18.0",
+    "@google/generative-ai": "^0.24.1",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "groq-sdk": "^1.5.0",
+    "playwright": "^1.50.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "sqlite3": "^5.1.7",
+    "typeorm": "^0.3.22",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@nestjs/testing": "^11.0.0",
+    "@types/node": "^22.20.1",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0",
+    "vitest": "^2.0.0"
+  }
+}

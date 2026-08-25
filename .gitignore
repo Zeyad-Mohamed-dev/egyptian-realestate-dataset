@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+coverage/
+data/*.db
+data/*.xlsx
+data/raw-html/
+playwright/.auth/
+data/
