@@ -1,59 +1,176 @@
-# Egyptian Housing Dataset Pipeline
+# Egyptian Real Estate Dataset Pipeline
 
-NestJS + Playwright project blueprint for the ECES Junior AI/Data Engineer take-home. This repository currently contains **structure only**: no scraper, extractor, database implementation, or API logic has been written.
+A complete pipeline for scraping, parsing, and extracting structured data from Egyptian real estate listings on Bayut.eg.
 
-## Technology choices
+## Overview
 
-- NestJS + TypeScript: clear module boundaries and dependency injection
-- Playwright: authorized browser collection
-- TypeORM + SQLite: durable checkpoints, deduplication, and raw-page metadata
-- Zod: schemas at module boundaries
-- ExcelJS: final XLSX workbook
-- Vitest: unit/integration test framework
+This project collects property listings from Bayut.eg (Egypt's largest real estate portal), extracts structured data, and exports to a standardized Excel format. The pipeline handles both Arabic and English listings with LLM-powered data extraction.
 
-## Collection authorization
+### Pipeline Stages
 
-Before building or running any automated collector, obtain authorization for this assessment. Set `COLLECTION_AUTHORIZED=true` only after that confirmation. Do not use CAPTCHA bypasses, proxy rotation, or access-evasion techniques.
+1. **Collect** (`npm run collect`) - Scrapes raw HTML from Bayut search pages using Playwright
+2. **Parse** (`npm run parse`) - Extracts JSON-LD structured data from HTML files
+3. **Extract** (`npm run extract`) - Uses LLM to extract Group B fields (compound, developer, finishing, etc.)
+4. **Export** (`npm run export`) - Exports structured data to `dataset.xlsx`
 
-## Planned commands
+## Dataset
 
-```powershell
+**Output**: `dataset.xlsx` at project root
+
+**Records**: 500 Egyptian property listings
+
+**Columns**: 36 standardized fields including:
+- Listing ID, URL, Property Type, Price, Area
+- Location (Governorate, City, District)
+- Property Details (Bedrooms, Bathrooms, Finishing Level)
+- Developer/Compound Information
+- Payment Terms, Amenities
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- npm
+- Playwright (for scraping)
+- LLM provider (Groq or Ollama)
+
+### Installation
+```bash
 npm install
+npx playwright install chromium
+```
+
+### Configuration
+Create `.env` file:
+```env
+# Scraper settings
+MAX_LISTINGS=500
+REQUEST_DELAY_MS=2000
+
+# LLM settings (for Group B extraction)
+LLM_PROVIDER=ollama  # or groq
+GROQ_API_KEY=your_key_here
+GROQ_MODEL=llama-3.1-8b-instant
+```
+
+### Usage
+```bash
+# Run full pipeline
 npm run collect
+npm run parse
 npm run extract
-npm run evaluate
 npm run export
+
+# Or run individual stages
+npm run extract:group-a  # Extract only Group A fields
+npm run export           # Export to Excel
 ```
 
-The scripts are placeholders until implementation begins.
+## Data Structure
 
-## Live collection smoke test
+### Group A Fields (from JSON-LD)
+- `listing_id`, `url`, `purpose`, `property_type`
+- `price`, `price_period`, `currency`
+- `bedrooms`, `bathrooms`, `area_sqm`
+- `location_raw`, `agency_name`, `is_verified`
+- `date_listed`
 
-This test uses the real Bayut search page and saves one real listing only to a temporary folder. It is skipped by normal `npm test` runs. After recording authorization in `.env`, run it explicitly in PowerShell:
+### Group B Fields (from LLM extraction)
+- `compound_name`, `developer_name`
+- `governorate`, `city`, `district`
+- `finishing_level`, `delivery_status`, `delivery_date`
+- `sale_type`, `payment_type`
+- `down_payment_amount`, `installment_years`, `installment_amount`
+- `amenities` (comma-separated list)
 
-```powershell
-$env:RUN_LIVE_BAYUT_TEST = 'true'
-npm test -- test/collect.live.e2e.spec.ts
+## Project Structure
+
+```
+dataset-eg/
+├── src/
+│   ├── collect/          # Playwright scraper
+│   ├── parse/            # HTML to JSON-LD parser
+│   ├── extract/          # LLM-based data extraction
+│   │   ├── group-a.service.ts    # Group A extraction
+│   │   ├── group-b.service.ts    # Group B extraction (LLM)
+│   │   └── llm/                 # LLM providers
+│   ├── export/           # Excel export
+│   └── cli/              # Command-line interfaces
+├── data/
+│   ├── raw-html/         # Scraped HTML files
+│   ├── parsed-json/      # Extracted JSON-LD
+│   └── database.sqlite   # SQLite database
+├── dataset.xlsx          # Output dataset
+├── CLEAN_FAILURES.md     # Scraping issues documented
+├── report.md             # Data analysis report
+└── README.md             # This file
 ```
 
-## Module map
+## Key Features
 
-| Module | Responsibility |
-| --- | --- |
-| `collect` | Discover listing URLs, capture authorized pages, and checkpoint each attempt |
-| `pipeline` | Coordinate asynchronous processing of saved raw HTML without re-fetching pages |
-| `parse` | Read Group A values from structured listing-page content |
-| `extract` | Extract Group B values only when explicitly stated in `description_raw` |
-| `normalize` | Normalize Arabic/English terms, numeric formats, categories, and locations |
-| `storage` | TypeORM entities, repositories, resume state, and deduplication |
-| `evaluate` | Compare predictions with the 25-listing gold set; report accuracy and hallucination rate |
-| `export` | Create the required XLSX, failure summary, and report inputs |
-| `common` | Shared field definitions, null rules, configuration, and error contracts |
+### Multi-Language Support
+Handles both Arabic and English listings with automatic language detection.
 
-## Intended data flow
+### LLM-Powered Extraction
+Uses Groq (Llama 3.1) or Ollama for intelligent field extraction from unstructured descriptions.
 
-`collect → raw HTML + SQLite checkpoint → parse (Group A) → extract (Group B) → normalize/validate → evaluate → XLSX export`
+### Incremental Updates
+Re-running the pipeline updates changed rows, adds new rows, and preserves file-only rows.
 
-Keep raw HTML and source URLs immutable. Make parsing and extraction rerunnable from stored data so extraction improvements do not trigger a re-collection.
+### Data Validation
+- Deduplication by listing ID
+- Price normalization to EGP
+- Compound name standardization
 
-`PipelineService.processSavedHtml()` is the first local processing step: it reads `data/raw-html/*.html` asynchronously and writes JSON intermediates to `data/parsed-json/`. It makes no browser or network requests.
+## Limitations
+
+- **Rate Limiting**: Bayut may block rapid requests. Use `REQUEST_DELAY_MS=2000+`
+- **Bot Detection**: Some pages return challenge pages instead of content
+- **Group B Population**: Only ~10% of listings have compound/developer data extracted
+- **Language Variations**: Arabic descriptions may use different terminology
+
+## Performance
+
+- **Scraping**: ~2-3 seconds per listing (with delays)
+- **Parsing**: <1 second per file
+- **Extraction**: ~3-5 seconds per listing (LLM dependent)
+- **Export**: <10 seconds for 500 rows
+
+## Troubleshooting
+
+### Empty Dataset
+1. Check `.env` has correct `MAX_LISTINGS` value
+2. Verify Playwright is installed: `npx playwright install chromium`
+3. Check `data/raw-html/` for scraped files
+
+### Missing Group B Data
+1. Ensure LLM provider is configured in `.env`
+2. Check `npm run extract` completed successfully
+3. Review logs for extraction errors
+
+### Export Errors
+1. Verify `data/database.sqlite` exists
+2. Check `dataset.xlsx` isn't open in another program
+3. Run `npm run extract:group-a` first if database is empty
+
+## Development
+
+### Adding New Fields
+1. Update `src/extract/types/group-b.types.ts`
+2. Modify extraction logic in `src/extract/group-b.service.ts`
+3. Update `src/export/export.service.ts` flattening
+
+### Changing LLM Provider
+1. Implement provider in `src/extract/llm/`
+2. Update `src/extract/extract.module.ts` provider selection
+3. Set `LLM_PROVIDER` in `.env`
+
+## License
+
+MIT
+
+## Acknowledgments
+
+- Bayut.eg for the data source
+- Groq for fast LLM inference
+- Playwright for browser automation

@@ -4,6 +4,7 @@ dist/
 coverage/
 data/*.db
 data/*.xlsx
+!dataset.xlsx
 data/raw-html/
 playwright/.auth/
 data/

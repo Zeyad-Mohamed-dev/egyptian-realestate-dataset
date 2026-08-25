@@ -12,6 +12,7 @@ import { LLM_PROVIDER } from './llm/llm-tokens';
 import { GroqProvider } from './llm/groq.client';
 import { GroupAReExtractionService } from './group-a-re-extraction';
 import { OllamaClient } from './llm/ollama.client';
+import { CerebrasProvider } from './llm/cerebras.client';
 
 @Module({
   imports: [
@@ -28,10 +29,11 @@ import { OllamaClient } from './llm/ollama.client';
     GroupAReExtractionService,
     GroqProvider,
     OllamaClient,
+    CerebrasProvider,
 
     {
       provide: LLM_PROVIDER,
-      useExisting: OllamaClient,
+      useExisting: GroqProvider,
     },
   ],
 

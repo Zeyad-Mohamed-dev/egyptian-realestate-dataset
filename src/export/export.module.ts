@@ -1,5 +1,14 @@
 import { Module } from '@nestjs/common';
-import { ExportService } from './export.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-@Module({ providers: [ExportService] })
+import { ExportService } from './export.service';
+import { ExtractionEntity } from '../extract/database/extraction.entity';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([ExtractionEntity]),
+  ],
+  providers: [ExportService],
+  exports: [ExportService],
+})
 export class ExportModule {}

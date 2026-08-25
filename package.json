@@ -16,9 +16,10 @@
     "evaluate": "echo \"Evaluation command not implemented yet\"",
     "list-extractions": "ts-node -r tsconfig-paths/register src/cli/list-extractions.ts",
     "extract:group-a": "ts-node -r tsconfig-paths/register src/cli/extract-group-a.ts",
-    "export": "echo \"Export command not implemented yet\""
+    "export": "ts-node -r tsconfig-paths/register src/cli/export.ts"
   },
   "dependencies": {
+    "@cerebras/cerebras_cloud_sdk": "^1.91.0",
     "@google/genai": "^2.18.0",
     "@google/generative-ai": "^0.24.1",
     "@nestjs/common": "^11.0.0",
