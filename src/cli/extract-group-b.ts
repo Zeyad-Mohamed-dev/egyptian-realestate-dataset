@@ -113,13 +113,21 @@ function buildSourceText(parsed: Record<string, unknown>, jsonLd: unknown[]): st
   let description = '';
 
   for (const item of jsonLd) {
-    if (item && typeof item === 'object' && 'mainEntity' in item) {
-      const entity = (item as Record<string, unknown>).mainEntity;
-      if (entity && typeof entity === 'object' && 'description' in entity) {
-        description = (entity as Record<string, unknown>).description as string;
-        break;
+    if (item && typeof item === 'object' && '@graph' in item) {
+      const graph = (item as Record<string, unknown>)['@graph'];
+      if (Array.isArray(graph)) {
+        for (const node of graph) {
+          if (node && typeof node === 'object' && 'mainEntity' in node) {
+            const entity = (node as Record<string, unknown>).mainEntity;
+            if (entity && typeof entity === 'object' && 'description' in entity) {
+              description = (entity as Record<string, unknown>).description as string;
+              break;
+            }
+          }
+        }
       }
     }
+    if (description) break;
   }
 
   // Build source text with available data
