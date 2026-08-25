@@ -8,7 +8,7 @@ import { ExtractionEntity } from '../extract/database/extraction.entity';
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'data/housing.sqlite',
+      database: 'data/database.sqlite',
       entities: [ExtractionEntity],
       synchronize: true,
     }),
