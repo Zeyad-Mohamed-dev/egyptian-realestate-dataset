@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import Groq from 'groq-sdk';
 
 import {
@@ -47,7 +47,7 @@ export class GroqProvider implements LLMProvider {
 
     const content =
       response.choices[0]?.message?.content;
-
+    Logger.log(`Groq response: ${content}`, GroqProvider.name);
     if (!content) {
       throw new Error(
         'Groq returned an empty response',
