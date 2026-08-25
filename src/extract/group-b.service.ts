@@ -957,7 +957,9 @@ CRITICAL RULES:
 
       // Check if amenity is explicitly mentioned in source
       if (sourceText.includes(amenityLower)) {
-        validatedAmenities.push(amenity);
+        // Normalize Arabic amenities to English
+        const normalized = this.normalizeAmenity(amenity);
+        validatedAmenities.push(normalized);
         continue;
       }
 
@@ -968,16 +970,52 @@ CRITICAL RULES:
       );
 
       if (hasVariation) {
-        validatedAmenities.push(amenity);
+        // Normalize Arabic amenities to English
+        const normalized = this.normalizeAmenity(amenity);
+        validatedAmenities.push(normalized);
       }
     }
 
     return validatedAmenities;
   }
 
+  private normalizeAmenity(amenity: string): string {
+    const normalizeMap: Record<string, string> = {
+      'جراج خاص للوحدة': 'Covered parking',
+      'جراج': 'Covered parking',
+      'موقف سيارات': 'Covered parking',
+      'غرفة تخزين': 'Storage Areas',
+      'تخزين': 'Storage Areas',
+      'اشتراك نادى': 'Swimming Pool',
+      'نادي': 'Swimming Pool',
+      'مسبح': 'Swimming Pool',
+      'secure': 'Security Staff',
+      'أمن': 'Security Staff',
+      'حراسة': 'Security Staff',
+      'غزة': 'Security Staff',
+    };
+
+    const amenityLower = amenity.toLowerCase();
+    
+    // Check exact match first
+    if (normalizeMap[amenity]) {
+      return normalizeMap[amenity];
+    }
+
+    // Check partial matches
+    for (const [arabic, english] of Object.entries(normalizeMap)) {
+      if (amenityLower.includes(arabic.toLowerCase())) {
+        return english;
+      }
+    }
+
+    // Return as-is if no normalization needed (already English)
+    return amenity;
+  }
+
   private getAmenityVariations(amenity: string): string[] {
     const variationMap: Record<string, string[]> = {
-      'covered parking': ['جراج', 'موقف سيارات', 'parking', 'garage'],
+      'covered parking': ['جراج', 'موقف سيارات', 'parking', 'garage', 'جراج خاص'],
       'pets allowed': ['حيوانات', 'pets', 'حيوانات أليفة'],
       'electricity meter': ['عداد كهرباء', 'electricity meter', 'count meter'],
       'water meter': ['عداد مياه', 'water meter'],
@@ -986,12 +1024,13 @@ CRITICAL RULES:
       'balcony or terrace': ['بلكونة', 'تراس', 'balcony', 'terrace'],
       'lobby in building': ['لوبي', 'lobby', 'بهو'],
       '24 hours concierge': ['كونسيرج', 'concierge', 'خدمات'],
-      'maids room': ['غرفة خادمة', 'maid', 'maids room', 'خادمة'],
-      'swimming pool': ['مسبح', 'pool', 'swimming'],
-      'gym or health club': ['جيم', 'صالة رياضية', 'gym', 'fitness'],
+      'maids room': ['غرفة خادمة', 'maid', 'maids room', 'خادمة', 'خادمة'],
+      'storage areas': ['غرفة تخزين', 'storage', 'تخزين'],
+      'swimming pool': ['مسبح', 'pool', 'swimming', 'نادي'],
+      'gym or health club': ['جيم', 'صالة رياضية', 'gym', 'fitness', 'اشتراك نادي'],
       'security staff': ['أمن', 'حراسة', 'security', 'guard'],
       'cctv security': ['كاميرات', 'cctv', 'مراقبة'],
-      'kids play area': [' played area', 'play area', 'kids area'],
+      'kids play area': [' played area', 'play area', 'kids area', 'منطقة ألعاب'],
       'lawn or garden': ['حديقة', 'garden', 'lawn'],
       'barbeque area': ['شواء', 'bbq', 'barbecue'],
     };
