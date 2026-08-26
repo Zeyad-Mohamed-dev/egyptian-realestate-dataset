@@ -325,20 +325,20 @@ async function main() {
   console.log(`  Has description: ${descCount} / ${rows.length} (${(descCount / rows.length * 100).toFixed(1)}%)`);
 
   // Down payment stats
-  console.log(`\n--- Down Payment Analysis ---`);
-  const downPaymentPcts = rows.map(r => r.down_payment_pct).filter(v => typeof v === 'number');
-  const downPaymentAmts = rows.map(r => r.down_payment_amount).filter(v => typeof v === 'number');
-  console.log(`  Listings with down_payment_pct: ${downPaymentPcts.length}`);
-  if (downPaymentPcts.length > 0) {
-    console.log(`    Min: ${Math.min(...downPaymentPcts)}%`);
-    console.log(`    Max: ${Math.max(...downPaymentPcts)}%`);
-    console.log(`    Mean: ${(downPaymentPcts.reduce((a, b) => a + b, 0) / downPaymentPcts.length).toFixed(1)}%`);
-  }
-  console.log(`  Listings with down_payment_amount: ${downPaymentAmts.length}`);
-  if (downPaymentAmts.length > 0) {
-    console.log(`    Min: EGP ${Math.min(...downPaymentAmts).toLocaleString()}`);
-    console.log(`    Max: EGP ${Math.max(...downPaymentAmts).toLocaleString()}`);
-  }
+  // console.log(`\n--- Down Payment Analysis ---`);
+  // const downPaymentPcts = rows.map(r => r.down_payment_pct).filter(v => typeof v === 'number');
+  // const downPaymentAmts = rows.map(r => r.down_payment_amount).filter(v => typeof v === 'number');
+  // console.log(`  Listings with down_payment_pct: ${downPaymentPcts.length}`);
+  // if (downPaymentPcts.length > 0) {
+  //   console.log(`    Min: ${Math.min(...downPaymentPcts)}%`);
+  //   console.log(`    Max: ${Math.max(...downPaymentPcts)}%`);
+  //   console.log(`    Mean: ${(downPaymentPcts.reduce((a, b) => a + b, 0) / downPaymentPcts.length).toFixed(1)}%`);
+  // }
+  // console.log(`  Listings with down_payment_amount: ${downPaymentAmts.length}`);
+  // if (downPaymentAmts.length > 0) {
+  //   console.log(`    Min: EGP ${Math.min(...downPaymentAmts).toLocaleString()}`);
+  //   console.log(`    Max: EGP ${Math.max(...downPaymentAmts).toLocaleString()}`);
+  // }
 
   // Installment years
   console.log(`\n--- Installment Years Analysis ---`);
