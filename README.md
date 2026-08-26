@@ -293,6 +293,7 @@ CLEAN_FAILURES.md
 Group B depends on an external or local LLM.
 
 In the submitted run, **94 of approximately 500 listings were successfully populated with Group B data** due to LLM API/rate limitations.
+The hand-labeling process across the 25 listings achieved an overall accuracy of 96.61% of llm extraction,
 
 Listings that could not be processed remain in the dataset with empty/null Group B fields rather than being filled using unsupported assumptions.
 
