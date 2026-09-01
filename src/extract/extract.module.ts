@@ -13,6 +13,8 @@ import { GroqProvider } from './llm/groq.client';
 import { GroupAReExtractionService } from './group-a-re-extraction';
 import { OllamaClient } from './llm/ollama.client';
 import { CerebrasProvider } from './llm/cerebras.client';
+import { RotatingLLMProvider } from './llm/RotatingClientaProvider';
+import { MistralProvider } from './llm/mistral.client';
 
 @Module({
   imports: [
@@ -29,11 +31,13 @@ import { CerebrasProvider } from './llm/cerebras.client';
     GroupAReExtractionService,
     GroqProvider,
     OllamaClient,
+    RotatingLLMProvider,
+    MistralProvider,
     CerebrasProvider,
 
     {
       provide: LLM_PROVIDER,
-      useExisting: GroqProvider,
+      useExisting: RotatingLLMProvider,
     },
   ],
 
