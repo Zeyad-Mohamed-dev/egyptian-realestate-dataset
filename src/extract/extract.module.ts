@@ -15,11 +15,14 @@ import { OllamaClient } from './llm/ollama.client';
 import { CerebrasProvider } from './llm/cerebras.client';
 import { RotatingLLMProvider } from './llm/RotatingClientaProvider';
 import { MistralProvider } from './llm/mistral.client';
+import { PropertySearchEntity } from './database/property.entity';
+import { PropertySearchService } from './services/searchable-property.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       ExtractionEntity,
+      PropertySearchEntity
     ]),
   ],
 
@@ -29,6 +32,7 @@ import { MistralProvider } from './llm/mistral.client';
     GroupAService,
     GroupBService,
     GroupAReExtractionService,
+    PropertySearchService,
     GroqProvider,
     OllamaClient,
     RotatingLLMProvider,

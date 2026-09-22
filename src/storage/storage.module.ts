@@ -3,13 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { StorageService } from './storage.service';
 import { ExtractionEntity } from '../extract/database/extraction.entity';
+import { PropertySearchEntity } from 'src/extract/database/property.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'data/database.sqlite',
-      entities: [ExtractionEntity],
+      entities: [ExtractionEntity, PropertySearchEntity],
       synchronize: true,
     }),
   ],

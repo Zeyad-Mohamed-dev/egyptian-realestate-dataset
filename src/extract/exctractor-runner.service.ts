@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { Repository } from 'typeorm';
 import { ExtractorService } from './extract.service';
 import { ExtractionEntity } from './database/extraction.entity';
 import { ParsedRawListing } from './types/parsed-listing.types';
+import { inject } from 'vitest';
 
 @Injectable()
 export class ExtractorRunnerService {
@@ -24,6 +26,7 @@ export class ExtractorRunnerService {
     new Logger(ExtractorRunnerService.name);
 
   constructor(
+    @Inject(ExtractorService)
     private readonly extractorService: ExtractorService,
 
     @InjectRepository(ExtractionEntity)

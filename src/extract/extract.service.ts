@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -13,6 +14,8 @@ import { ExtractionEntity } from './database/extraction.entity';
 import { ParsedRawListing } from './types/parsed-listing.types';
 import { GroupA } from './types/group-a.types';
 import { GroupB } from './types/group-b.types';
+import { ExtractionSearch } from 'src/agent/types/exctraction-query.type';
+import { PropertySearchEntity } from './database/property.entity';
 
 @Injectable()
 export class ExtractorService {
@@ -22,16 +25,21 @@ export class ExtractorService {
     );
 
   constructor(
+    @Inject(GroupAService)
     private readonly groupAService: GroupAService,
 
+    @Inject(GroupBService)
     private readonly groupBService: GroupBService,
+    @InjectRepository(PropertySearchEntity)
+    private readonly propertySearchRepository:
+      Repository<PropertySearchEntity>,
 
     @InjectRepository(
       ExtractionEntity,
     )
     private readonly repository:
       Repository<ExtractionEntity>,
-  ) {}
+  ) { }
 
   /**
    * Full extraction.
@@ -201,7 +209,13 @@ export class ExtractorService {
       this.logger.log(
         `Extraction saved: ${listingId} (success)`,
       );
+      await this.savePropertySearch(
+        saved,
+      );
 
+      this.logger.log(
+        `Extraction saved: ${listingId} (success)`,
+      );
       return saved;
     } catch (error) {
       const reason =
@@ -322,7 +336,7 @@ export class ExtractorService {
        */
       extraction.status =
         extraction.groupAValid &&
-        extraction.groupBValid
+          extraction.groupBValid
           ? 'success'
           : 'failed';
 
@@ -442,7 +456,7 @@ export class ExtractorService {
         | null = null;
 
       switch (
-        installmentFrequency
+      installmentFrequency
       ) {
         case 'monthly':
           paymentsPerYear = 12;
@@ -477,8 +491,8 @@ export class ExtractorService {
         totalInstallmentCost =
           downPaymentAmount +
           installmentAmount *
-            paymentsPerYear *
-            installmentYears;
+          paymentsPerYear *
+          installmentYears;
       }
     }
 
@@ -489,5 +503,221 @@ export class ExtractorService {
 
       totalInstallmentCost,
     };
+  }
+
+  private async savePropertySearch(
+    extraction: ExtractionEntity,
+  ): Promise<void> {
+    if (
+      extraction.status !== 'success' ||
+      !extraction.groupA ||
+      !extraction.groupB
+    ) {
+      return;
+    }
+
+    const existing =
+      await this.propertySearchRepository.findOne({
+        where: {
+          listingId: extraction.listingId,
+        },
+      });
+
+    if (existing) {
+      return;
+    }
+
+    const groupA = extraction.groupA;
+    const groupB = extraction.groupB;
+
+    const property =
+      this.propertySearchRepository.create({
+        listingId: extraction.listingId,
+
+        // Group A
+        title: groupA.title,
+        price: groupA.price,
+        currency: groupA.currency,
+        propertyType: groupA.propertyType,
+        purpose: groupA.purpose,
+        bedrooms: groupA.bedrooms,
+        bathrooms: groupA.bathrooms,
+        areaSqm: groupA.areaSqm,
+        location: groupA.location,
+        latitude: groupA.latitude,
+        longitude: groupA.longitude,
+        sourceUrl: groupA.sourceUrl,
+        pricePerSqm: groupA.pricePerSqm,
+        totalInstallmentCost:
+          groupA.totalInstallmentCost,
+        pricePeriod: groupA.pricePeriod,
+        agencyName: groupA.agencyName,
+        isVerified: groupA.isVerified,
+        dateListed: groupA.dateListed,
+        language: groupA.language,
+        governorate: groupA.governorate,
+        city: groupA.city,
+        district: groupA.district,
+
+        // Group B
+        description: groupB.description,
+        compoundName: groupB.compoundName,
+        developerName: groupB.developerName,
+        finishingLevel: groupB.finishingLevel,
+        deliveryStatus: groupB.deliveryStatus,
+        deliveryDate: groupB.deliveryDate,
+        saleType: groupB.saleType,
+        paymentType: groupB.paymentType,
+        downPaymentAmount:
+          groupB.downPaymentAmount,
+        downPaymentPct:
+          groupB.downPaymentPct,
+        installmentYears:
+          groupB.installmentYears,
+        installmentAmount:
+          groupB.installmentAmount,
+        installmentFrequency:
+          groupB.installmentFrequency,
+        cashDiscountPct:
+          groupB.cashDiscountPct,
+        floorNumber: groupB.floorNumber,
+        gardenAreaSqm:
+          groupB.gardenAreaSqm,
+        roofAreaSqm:
+          groupB.roofAreaSqm,
+        isNegotiable:
+          groupB.isNegotiable,
+      });
+
+    await this.propertySearchRepository.save(
+      property,
+    );
+
+    this.logger.log(
+      `Property search saved: ${extraction.listingId}`,
+    );
+  }
+
+  async buildSearchableProperties(): Promise<void> {
+  const extractions =
+    await this.repository.find({
+      where: {
+        status: 'success',
+      },
+    });
+
+  this.logger.log(
+    `Found ${extractions.length} successful extractions`,
+  );
+
+  const searchableProperties =
+    extractions
+      .filter(
+        (extraction) =>
+          extraction.groupA &&
+          extraction.groupB,
+      )
+      .map((extraction) => {
+        const groupA =
+          extraction.groupA!;
+
+        const groupB =
+          extraction.groupB!;
+
+        return {
+          listingId:
+            extraction.listingId,
+
+          title: groupA.title,
+          price: groupA.price,
+          currency: groupA.currency,
+          propertyType:
+            groupA.propertyType,
+          purpose: groupA.purpose,
+          bedrooms: groupA.bedrooms,
+          bathrooms: groupA.bathrooms,
+          areaSqm: groupA.areaSqm,
+          location: groupA.location,
+          latitude: groupA.latitude,
+          longitude: groupA.longitude,
+          sourceUrl: groupA.sourceUrl,
+          pricePerSqm:
+            groupA.pricePerSqm,
+          totalInstallmentCost:
+            groupA.totalInstallmentCost,
+          pricePeriod:
+            groupA.pricePeriod,
+          agencyName:
+            groupA.agencyName,
+          isVerified:
+            groupA.isVerified,
+          dateListed:
+            groupA.dateListed,
+          language:
+            groupA.language,
+          governorate:
+            groupA.governorate,
+          city: groupA.city,
+          district: groupA.district,
+
+          description:
+            groupB.description,
+          compoundName:
+            groupB.compoundName,
+          developerName:
+            groupB.developerName,
+          finishingLevel:
+            groupB.finishingLevel,
+          deliveryStatus:
+            groupB.deliveryStatus,
+          deliveryDate:
+            groupB.deliveryDate,
+          saleType:
+            groupB.saleType,
+          paymentType:
+            groupB.paymentType,
+          downPaymentAmount:
+            groupB.downPaymentAmount,
+          downPaymentPct:
+            groupB.downPaymentPct,
+          installmentYears:
+            groupB.installmentYears,
+          installmentAmount:
+            groupB.installmentAmount,
+          installmentFrequency:
+            groupB.installmentFrequency,
+          cashDiscountPct:
+            groupB.cashDiscountPct,
+          floorNumber:
+            groupB.floorNumber,
+          gardenAreaSqm:
+            groupB.gardenAreaSqm,
+          roofAreaSqm:
+            groupB.roofAreaSqm,
+          isNegotiable:
+            groupB.isNegotiable,
+        };
+      });
+
+  if (searchableProperties.length === 0) {
+    this.logger.log(
+      'No searchable properties to create',
+    );
+
+    return;
+  }
+
+  await this.propertySearchRepository.upsert(
+    searchableProperties,
+    ['listingId'],
+  );
+
+  this.logger.log(
+    `Created/updated ${searchableProperties.length} searchable properties`,
+  );
+}
+
+  public search(input: ExtractionSearch) {
+
   }
 }

@@ -9,6 +9,7 @@ import { ParseModule } from './parse/parse.module';
 import { PipelineModule } from './pipeline/pipeline.module';
 import { StorageModule } from './storage/storage.module';
 import { ConfigModule } from '@nestjs/config';
+import { AgentModule } from './agent/agent.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ConfigModule } from '@nestjs/config';
     NormalizeModule,
     EvaluateModule,
     ExportModule,
+    AgentModule,
   ],
 })
 export class AppModule {}
